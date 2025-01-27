@@ -1,0 +1,43 @@
+{
+  "name": "@daveyplate/my-tsx-package",
+  "homepage": "https://github.com/daveyplate/my-tsx-package",
+  "version": "1.0.0",
+  "description": "My TSX Package",
+  "module": "dist/index",
+  "types": "dist/index",
+  "exports": "./dist/index.js",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc-watch --onSuccess \"npx eslint\"",
+    "prepublishOnly": "rm -rf dist && npm run build"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "daveycodez",
+  "license": "MIT",
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^3.0.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-hooks-addons": "^0.4.1",
+    "react": "file:../new-tech/node_modules/react",
+    "react-dom": "file:../new-tech/node_modules/react-dom",
+    "tsc-watch": "^6.2.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.17.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}
