@@ -1,6 +1,6 @@
 {
-  "name": "@daveyplate/my-tsx-package",
-  "homepage": "https://github.com/daveyplate/my-tsx-package",
+  "name": "@daveyplate/neon-drizzle-tanstack",
+  "homepage": "https://github.com/daveyplate/neon-drizzle-tanstack",
   "version": "1.0.0",
   "description": "My TSX Package",
   "module": "dist/index",
@@ -16,15 +16,34 @@
     "prepublishOnly": "rm -rf dist && npm run build"
   },
   "keywords": [
-    "typescript"
+    "typescript",
+    "react",
+    "react-query",
+    "drizzle-orm",
+    "drizzle",
+    "neon-database",
+    "serverless",
+    "tanstack",
+    "tanstack-query",
+    "hooks",
+    "neon",
+    "postgres",
+    "jwt",
+    "jwks",
+    "authorize",
+    "next",
+    "next.js"
   ],
   "author": "daveycodez",
   "license": "MIT",
   "devDependencies": {
+    "@neondatabase/serverless": "file:../new-tech/node_modules/@neondatabase/serverless",
     "@stylistic/eslint-plugin": "^3.0.0",
+    "@tanstack/react-query": "file:../new-tech/node_modules/@tanstack/react-query",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19",
+    "drizzle-orm": "file:../new-tech/node_modules/drizzle-orm",
     "eslint": "^9",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -37,7 +56,13 @@
     "typescript-eslint": "^8.17.0"
   },
   "peerDependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@tanstack/react-query": "^5.65.0",
+    "drizzle-orm": "^0.39.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "devalue": "^5.1.1"
   }
 }
