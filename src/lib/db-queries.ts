@@ -1,5 +1,5 @@
 import { TablesRelationalConfig, DBQueryConfig, BuildQueryResult, and, SQL, sql } from "drizzle-orm"
-import { PgQueryResultHKT, PgDatabase, PgTable, PgUpdateSetSource } from "drizzle-orm/pg-core"
+import { PgQueryResultHKT, PgDatabase, PgTable, PgUpdateSetSource, PgInsertValue } from "drizzle-orm/pg-core"
 import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query"
 
 export async function findMany<
@@ -51,4 +51,17 @@ export async function update<
     where?: SQL
 ) {
     return await db.update(table).set(values).where(and(id ? sql`id = ${id}` : undefined, where)).returning()
+}
+
+export async function insert<
+    TQueryResult extends PgQueryResultHKT,
+    TFullSchema extends Record<string, unknown>,
+    TSchema extends TablesRelationalConfig,
+    TTable extends PgTable
+>(
+    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    table: TTable,
+    values: PgInsertValue<TTable>,
+) {
+    return await db.insert(table).values(values).returning()
 }
