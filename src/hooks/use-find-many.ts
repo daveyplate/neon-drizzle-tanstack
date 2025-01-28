@@ -39,19 +39,21 @@ export function useFindMany<
         }) : skipToken,
     })
 
-    const { data, dataUpdatedAt } = queryResult
+    const { data: results, dataUpdatedAt } = queryResult
 
     // Seed the useFindFirst detail queries with the result data
     useEffect(() => {
-        if (!data || !table) return
+        if (!results || !table) return
 
-        data.forEach((result) => {
+        results.forEach((result) => {
             const resultWithId = result as { id: unknown }
             if (!resultWithId.id) return
 
             queryClient.setQueryData([table, "detail", resultWithId.id], resultWithId, { updatedAt: dataUpdatedAt })
+
+            // TODO propogate each result to all other lists?
         })
-    }, [data, queryClient, table, dataUpdatedAt])
+    }, [results, queryClient, table, dataUpdatedAt])
 
     return queryResult
 }

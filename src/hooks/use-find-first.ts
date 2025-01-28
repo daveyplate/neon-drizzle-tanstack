@@ -44,11 +44,11 @@ export function useFindFirst<
         }) : skipToken,
     })
 
-    const { data, dataUpdatedAt } = queryResult
+    const { data: result, dataUpdatedAt } = queryResult
 
     // Update the useFindMany list queries with the result data, but only if they have the same number of columns
     useEffect(() => {
-        if (!data || !table) return
+        if (!result || !table) return
 
         const listQueries = queryClient.getQueriesData<{ id: unknown }[]>({ queryKey: [table, "list"], exact: false })
 
@@ -56,12 +56,12 @@ export function useFindFirst<
             if (!existingData) return
 
             const updatedData = existingData.map((item) =>
-                (item.id == id && Object.keys(item).length == Object.keys(data).length) ? { ...item, ...data } : item
+                (item.id == id && Object.keys(item).length == Object.keys(result).length) ? { ...item, ...result } : item
             )
 
             queryClient.setQueryData(queryKey, updatedData, { updatedAt: dataUpdatedAt })
         })
-    }, [queryClient, id, data, table, dataUpdatedAt])
+    }, [queryClient, id, result, table, dataUpdatedAt])
 
     return queryResult
 }
