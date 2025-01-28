@@ -1,5 +1,5 @@
-import { TablesRelationalConfig, DBQueryConfig, BuildQueryResult } from "drizzle-orm"
-import { PgQueryResultHKT, PgDatabase } from "drizzle-orm/pg-core"
+import { TablesRelationalConfig, DBQueryConfig, BuildQueryResult, and, SQL, sql } from "drizzle-orm"
+import { PgQueryResultHKT, PgDatabase, PgTable, PgUpdateSetSource } from "drizzle-orm/pg-core"
 import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query"
 
 export async function findMany<
@@ -36,4 +36,19 @@ export async function findFirst<
     }
 
     return await query[table].findFirst(config) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
+}
+
+export async function update<
+    TQueryResult extends PgQueryResultHKT,
+    TFullSchema extends Record<string, unknown>,
+    TSchema extends TablesRelationalConfig,
+    TTable extends PgTable
+>(
+    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    table: TTable,
+    id: TTable["$inferSelect"]["id"] | null,
+    values: PgUpdateSetSource<TTable>,
+    where?: SQL
+) {
+    return await db.update(table).set(values).where(and(id ? sql`id = ${id}` : undefined, where)).returning()
 }
