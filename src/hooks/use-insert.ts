@@ -1,11 +1,12 @@
+import { useContext } from "react"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
-import { useAuthDb } from "./use-auth-db"
-import { useContext } from "react"
-import { NeonQueryContext } from "../lib/neon-query-provider"
+
+import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
 import { insertQuery } from "../lib/db-queries"
+import { useAuthDb } from "./use-auth-db"
 
 export function useInsert<
     TQueryResult extends PgQueryResultHKT,
@@ -18,11 +19,13 @@ export function useInsert<
     db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
     table?: TableName | null | false | "",
     config?: TConfig | null,
+    context?: NeonQueryContextType | null
 ) {
     const pgTable = db._.fullSchema[table as string] as PgTable
-
     const queryClient = useQueryClient()
-    const { mutateInvalidate, optimisticMutate } = useContext(NeonQueryContext)
+    const queryContext = useContext(NeonQueryContext)
+    const { mutateInvalidate, optimisticMutate } = { ...queryContext, ...context }
+
     const authDb = useAuthDb(db)
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
@@ -34,7 +37,7 @@ export function useInsert<
 
             // Cancel any outgoing refetches
             // (so they don't overwrite our optimistic update)
-            await queryClient.cancelQueries({ queryKey })
+            await queryClient.cancelQueries({ queryKey: [table] })
 
             // Snapshot the previous query state
             const previousQueryState = queryClient.getQueryState(queryKey)
@@ -77,6 +80,6 @@ export function useInsert<
         mutationKey: [table, "insert"]
     })
 
-    const { variables } = mutation
-    return { ...mutation, variables: variables as TableType }
+    const { variables, mutate } = mutation
+    return { ...mutation, variables: variables as TableType, insert: mutate }
 }

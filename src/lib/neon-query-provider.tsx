@@ -2,7 +2,7 @@
 
 import { neonConfig } from "@neondatabase/serverless"
 import { AnyUseQueryOptions } from "@tanstack/react-query"
-import { createContext, ReactNode, useContext, useEffect } from "react"
+import { createContext, ReactNode, useEffect } from "react"
 
 export type NeonQueryContextType = {
     token?: string | null,
@@ -30,9 +30,4 @@ export const NeonQueryProvider = (
             {children}
         </NeonQueryContext.Provider>
     )
-}
-
-export const useToken = () => {
-    const { token } = useContext(NeonQueryContext)
-    return { token }
 }

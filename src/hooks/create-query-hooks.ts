@@ -6,6 +6,8 @@ import { AnyUseQueryOptions } from "@tanstack/react-query"
 import { useFindMany } from "./use-find-many"
 import { useFindFirst } from "./use-find-first"
 import { useInsert } from "./use-insert"
+import { useUpdate } from "./use-update"
+import { NeonQueryContextType } from "../lib/neon-query-provider"
 
 export function createQueryHooks<
     TQueryResult extends PgQueryResultHKT,
@@ -22,8 +24,9 @@ export function createQueryHooks<
             >(
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
-                options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
-            ) => useFindMany(db, table, config, options),
+                options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
+                context?: NeonQueryContextType | null
+            ) => useFindMany(db, table, config, options, context),
         useFindFirst:
             <
                 TableName extends keyof TSchema,
@@ -32,8 +35,9 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 id?: TSchema[TableName]["columns"]["id"]["_"]["data"] | null,
                 config?: TConfig | null,
-                options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
-            ) => useFindFirst(db, table, id, config, options),
+                options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
+                context?: NeonQueryContextType | null
+            ) => useFindFirst(db, table, id, config, options, context),
         useInsert:
             <
                 TableName extends keyof TSchema,
@@ -41,25 +45,16 @@ export function createQueryHooks<
             >(
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
-            ) => useInsert(db, table, config)
+                context?: NeonQueryContextType | null
+            ) => useInsert(db, table, config, context),
+        useUpdate:
+            <
+                TableName extends keyof TSchema,
+                TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
+            >(
+                table?: TableName | null | false | "",
+                config?: TConfig | null,
+                context?: NeonQueryContextType | null
+            ) => useUpdate(db, table, config, context)
     }
 }
-
-// initialData: options?.initialData || (() => {
-//     const queriesData = queryClient.getQueriesData<{ id: unknown }[]>({
-//         queryKey: [table, "list"],
-//         exact: false
-//     })
-
-//     return queriesData?.flatMap(data => data?.[1])?.find(item => item?.id === id) as TableType
-// }),
-// initialDataUpdatedAt: options?.initialDataUpdatedAt || (() => {
-//     // ⬇️ get the last fetch time of the list
-//     const dataUpdatedAt = queryClient.getQueryState([table, "list", config])?.dataUpdatedAt ||
-//         queryClient.getQueryCache().find({ queryKey: [table, "list"], exact: false })?.state?.dataUpdatedAt
-//     if (dataUpdatedAt) {
-//         const timeSinceUpdateInSeconds = (Date.now() - dataUpdatedAt) / 1000
-//         console.log("timeSinceUpdateInSeconds", timeSinceUpdateInSeconds)
-//     }
-//     return dataUpdatedAt
-// }),

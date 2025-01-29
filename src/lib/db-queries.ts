@@ -25,17 +25,17 @@ export async function findFirst<
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig,
     TableName extends keyof TSchema,
-    TConfig extends DBQueryConfig<"one", true, TSchema, TSchema[TableName]>
+    TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
 >(
     db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
     table: TableName,
-    config?: TConfig
+    config?: TConfig | null
 ) {
     const query = db.query as {
         [K in keyof TSchema]: RelationalQueryBuilder<TSchema, TSchema[K]>
     }
 
-    return await query[table].findFirst(config) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
+    return await query[table].findFirst({ ...(config as DBQueryConfig<"one", true, TSchema, TSchema[TableName]>) }) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 }
 
 export async function updateQuery<
