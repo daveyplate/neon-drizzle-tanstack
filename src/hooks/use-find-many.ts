@@ -28,13 +28,14 @@ export function useFindMany<
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 
     const queryContext = useContext(NeonQueryContext)
-    const { fetchEndpoint, appendTableEndpoint, cachePropagation } = { ...queryContext, ...context }
+    const { fetchEndpoint, appendTableEndpoint, cachePropagation, queryOptions } = { ...queryContext, ...context }
     const queryClient = useQueryClient()
     const authDb = useAuthDb(db)
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
     const queryResult = useQuery<TableType[]>({
+        ...queryOptions,
         ...options,
         queryKey,
         queryFn: table ? (async () => {
