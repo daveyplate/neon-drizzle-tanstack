@@ -8,6 +8,7 @@ import { useFindFirst } from "./use-find-first"
 import { useInsert } from "./use-insert"
 import { useUpdate } from "./use-update"
 import { NeonQueryContextType } from "../lib/neon-query-provider"
+import { useDelete } from "./use-delete"
 
 export function createQueryHooks<
     TQueryResult extends PgQueryResultHKT,
@@ -55,6 +56,15 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useUpdate(db, table, config, context)
+            ) => useUpdate(db, table, config, context),
+        useDelete:
+            <
+                TableName extends keyof TSchema,
+                TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
+            >(
+                table?: TableName | null | false | "",
+                config?: TConfig | null,
+                context?: NeonQueryContextType | null
+            ) => useDelete(db, table, config, context)
     }
 }

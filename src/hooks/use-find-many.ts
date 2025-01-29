@@ -9,6 +9,7 @@ import { serializeConfig } from "../lib/utils"
 import { useAuthDb } from "./use-auth-db"
 import { useInsert } from "./use-insert"
 import { useUpdate } from "./use-update"
+import { useDelete } from "./use-delete"
 
 export function useFindMany<
     TQueryResult extends PgQueryResultHKT,
@@ -41,29 +42,30 @@ export function useFindMany<
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}`
             }
 
-            const results = await findMany(authDb, table, config)
-            return results as TableType[]
+            const records = await findMany(authDb, table, config)
+            return records as TableType[]
         }) : skipToken,
     })
 
-    const { data: results, dataUpdatedAt } = queryResult
+    const { data: records, dataUpdatedAt } = queryResult
 
     // Seed the useFindFirst detail queries with the result data
     useEffect(() => {
-        if (!results || !table || !cachePropagation) return
+        if (!records || !table || !cachePropagation) return
 
-        results.forEach((result) => {
-            const resultWithId = result as { id: unknown }
-            if (!resultWithId.id) return
+        records.forEach((record) => {
+            const recordWithId = record as { id: IDType }
+            if (!recordWithId.id) return
 
-            queryClient.setQueryData([table, "detail", resultWithId.id], resultWithId, { updatedAt: dataUpdatedAt })
+            queryClient.setQueryData([table, "detail", recordWithId.id], record, { updatedAt: dataUpdatedAt })
 
-            // TODO propogate each result to all other lists?
+            // TODO propogate each record to all other lists?
         })
-    }, [results, queryClient, table, dataUpdatedAt, cachePropagation])
+    }, [records, queryClient, table, dataUpdatedAt, cachePropagation])
 
     const { insert } = useInsert(db, table, config)
     const { update } = useUpdate(db, table, config)
+    const { delete: deleteRecord } = useDelete(db, table, config)
 
-    return { ...queryResult, insert, update }
+    return { ...queryResult, insert, update, delete: deleteRecord }
 }

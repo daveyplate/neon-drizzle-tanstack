@@ -31,8 +31,8 @@ export function useInsert<
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
     const mutation = useMutation({
-        mutationFn: (variables: Partial<TableType>) => insertQuery(authDb, pgTable, variables),
-        onMutate: async (variables) => {
+        mutationFn: (values: Partial<TableType>) => insertQuery(authDb, pgTable, values),
+        onMutate: async (values) => {
             if (!optimisticMutate) return
 
             // Cancel any outgoing refetches
@@ -45,13 +45,13 @@ export function useInsert<
 
             // Optimistically update to the new value
             if (previousData) {
-                queryClient.setQueryData(queryKey, [...previousData, variables], { updatedAt: Date.now() })
+                queryClient.setQueryData(queryKey, [...previousData, values], { updatedAt: Date.now() })
             }
 
             // Return a context object with the snapshotted query state
             return { previousQueryState }
         },
-        onError: (error, variables, context) => {
+        onError: (error, values, context) => {
             if (error) {
                 console.error(error)
                 queryClient.getQueryCache().config.onError?.(error, { queryKey: [table, "insert"] } as unknown as Query<unknown, unknown, unknown, readonly unknown[]>)
@@ -65,11 +65,11 @@ export function useInsert<
                 queryClient.setQueryData(queryKey, previousData, { updatedAt: context!.previousQueryState!.dataUpdatedAt })
             }
         },
-        onSettled: async (results, error, variables, context) => {
+        onSettled: async (data, error, values, context) => {
             if (optimisticMutate) {
                 const previousData = context?.previousQueryState?.data as TableType[]
                 if (previousData) {
-                    queryClient.setQueryData(queryKey, [...previousData, ...(results as TableType[])], { updatedAt: Date.now() })
+                    queryClient.setQueryData(queryKey, [...previousData, ...(data as TableType[])], { updatedAt: Date.now() })
                 }
             }
 

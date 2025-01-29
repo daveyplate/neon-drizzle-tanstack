@@ -8,6 +8,7 @@ import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provid
 import { serializeConfig } from "../lib/utils"
 import { useAuthDb } from "./use-auth-db"
 import { useUpdate } from "./use-update"
+import { useDelete } from "./use-delete"
 
 export function useFindFirst<
     TQueryResult extends PgQueryResultHKT,
@@ -41,20 +42,20 @@ export function useFindFirst<
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}` : "")
             }
 
-            const result = await findFirst(authDb, table, {
+            const record = await findFirst(authDb, table, {
                 where: id ? eq(sql`id`, id) : undefined,
                 ...config
             })
 
-            return result as TableType
+            return record as TableType
         }) : skipToken,
     })
 
-    const { data: result, dataUpdatedAt } = queryResult
+    const { data: record, dataUpdatedAt } = queryResult
 
     // Update the useFindMany list queries with the result data, but only if they have the same number of columns
     useEffect(() => {
-        if (!result || !table || !cachePropagation) return
+        if (!record || !table || !cachePropagation) return
 
         const listQueries = queryClient.getQueriesData<{ id: IDType }[]>({ queryKey: [table, "list"], exact: false })
 
@@ -62,20 +63,19 @@ export function useFindFirst<
             if (!existingData) return
 
             const updatedData = existingData.map((item) =>
-                (item.id == id && Object.keys(item).length == Object.keys(result).length) ? result : item
+                (item.id == id && Object.keys(item).length == Object.keys(record).length) ? record : item
             )
 
             queryClient.setQueryData(queryKey, updatedData, { updatedAt: dataUpdatedAt })
         })
-    }, [queryClient, id, result, table, dataUpdatedAt, cachePropagation])
+    }, [queryClient, id, record, table, dataUpdatedAt, cachePropagation])
 
-    const { mutate } = useUpdate(db, table, config)
+    const { update: updateRecord } = useUpdate(db, table, config)
+    const { delete: deleteRecord } = useDelete(db, table, config)
 
-    const update = async (values: Partial<TableType>) => {
-        mutate({ id, values })
-    }
+    const update = (values: Partial<TableType>) => updateRecord(id, values)
 
-    return { ...queryResult, update }
+    return { ...queryResult, update, delete: () => deleteRecord(id) }
 }
 
 // initialData: options?.initialData || (() => {

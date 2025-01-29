@@ -4,11 +4,11 @@ import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "dr
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
 
 import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
-import { updateQuery } from "../lib/db-queries"
+import { deleteQuery } from "../lib/db-queries"
 import { useAuthDb } from "./use-auth-db"
 import { serializeConfig } from "../lib/utils"
 
-export function useUpdate<
+export function useDelete<
     TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig,
@@ -31,12 +31,11 @@ export function useUpdate<
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
     const mutation = useMutation({
-        mutationFn: ({ id, values, where }: {
-            id?: IDType | null,
-            values?: Partial<TableType>,
+        mutationFn: ({ id, where }: {
+            id?: IDType,
             where?: SQL
-        }) => updateQuery(authDb, pgTable, id, { ...values }, where),
-        onMutate: async ({ values, id }) => {
+        }) => deleteQuery(authDb, pgTable, id, where),
+        onMutate: async ({ id }) => {
             if (!optimisticMutate || !id) return
 
             // Cancel any outgoing refetches
@@ -57,18 +56,12 @@ export function useUpdate<
                     const previousData = query.state.data as { id: IDType }[]
                     if (!previousData?.find((data) => data.id == id)) return
 
-                    queryClient.setQueryData(queryKey, previousData.map((data) => {
-                        if (data.id == id) {
-                            return { ...data, ...values }
-                        }
-
-                        return data
-                    }))
+                    queryClient.setQueryData(queryKey, previousData.filter((data) => data.id != id))
                 } else if (queryKey[1] == "detail") {
-                    const previousData = query.state.data as TableType
+                    const previousData = query.state.data
                     if (!previousData) return
 
-                    queryClient.setQueryData(queryKey, { ...previousData, ...values }, { updatedAt: Date.now() })
+                    queryClient.setQueryData(queryKey, null, { updatedAt: Date.now() })
                 } else {
                     return
                 }
@@ -84,7 +77,7 @@ export function useUpdate<
                 console.error(error)
                 queryClient.getQueryCache().config.onError?.(
                     error,
-                    { queryKey: [table, "update"] } as unknown as Query<unknown, unknown, unknown, readonly unknown[]>
+                    { queryKey: [table, "delete"] } as unknown as Query<unknown, unknown, unknown, readonly unknown[]>
                 )
             }
 
@@ -113,18 +106,7 @@ export function useUpdate<
                             const previousData = query.state.data as { id: IDType }[]
                             if (!previousData?.find((data) => data.id == record.id)) return
 
-                            queryClient.setQueryData(queryKey, previousData.map((data) => {
-                                if (data.id == record.id) {
-                                    return record
-                                }
-
-                                return data
-                            }))
-                        } else if (queryKey[1] == "detail") {
-                            const previousData = query.state.data as TableType
-                            if (!previousData) return
-
-                            queryClient.setQueryData(queryKey, record, { updatedAt: Date.now() })
+                            queryClient.setQueryData(queryKey, previousData.filter((data) => data.id != record.id))
                         }
                     })
                 })
@@ -134,14 +116,14 @@ export function useUpdate<
                 await queryClient.invalidateQueries({ queryKey: [table] })
             }
         },
-        mutationKey: [table, "update"]
+        mutationKey: [table, "delete"]
     })
 
     const { variables, mutate } = mutation
 
-    const update = (id?: IDType | null, values?: Partial<TableType>, where?: SQL) => {
-        mutate({ id, values, where })
+    const deleteRecord = (id?: IDType, where?: SQL) => {
+        mutate({ id, where })
     }
 
-    return { ...mutation, variables: variables as TableType, update }
+    return { ...mutation, variables: variables as TableType, delete: deleteRecord }
 }
