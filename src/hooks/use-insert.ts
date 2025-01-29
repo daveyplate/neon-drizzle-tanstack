@@ -3,7 +3,7 @@ import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
 
-import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
+import { NeonQueryContext, NeonQueryContextType, RecordType } from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
 import { insertQuery } from "../lib/db-queries"
 import { useAuthDb } from "./use-auth-db"
@@ -24,7 +24,7 @@ export function useInsert<
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const { mutateInvalidate, optimisticMutate } = { ...queryContext, ...context }
+    const { mutateInvalidate, optimisticMutate, onMutate } = { ...queryContext, ...context }
 
     const authDb = useAuthDb(db)
 
@@ -45,7 +45,7 @@ export function useInsert<
 
             // Optimistically update to the new value
             if (previousData) {
-                queryClient.setQueryData(queryKey, [...previousData, values], { updatedAt: Date.now() })
+                queryClient.setQueryData(queryKey, [...previousData, values])
             }
 
             // Return a context object with the snapshotted query state
@@ -65,11 +65,14 @@ export function useInsert<
                 queryClient.setQueryData(queryKey, previousData, { updatedAt: context!.previousQueryState!.dataUpdatedAt })
             }
         },
-        onSettled: async (data, error, values, context) => {
+        onSettled: async (records, error, values, context) => {
+            onMutate?.(table as string, "delete", records as RecordType[])
+
             if (optimisticMutate) {
                 const previousData = context?.previousQueryState?.data as TableType[]
+
                 if (previousData) {
-                    queryClient.setQueryData(queryKey, [...previousData, ...(data as TableType[])], { updatedAt: Date.now() })
+                    queryClient.setQueryData(queryKey, [...previousData, ...(records as TableType[])])
                 }
             }
 

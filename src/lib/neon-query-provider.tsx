@@ -4,6 +4,7 @@ import { neonConfig } from "@neondatabase/serverless"
 import { AnyUseQueryOptions } from "@tanstack/react-query"
 import { createContext, ReactNode, useEffect } from "react"
 
+export type RecordType = Record<string, unknown> & { id: unknown }
 export type NeonQueryContextType = {
     token?: string | null,
     fetchEndpoint?: string,
@@ -11,6 +12,7 @@ export type NeonQueryContextType = {
     mutateInvalidate?: boolean,
     optimisticMutate?: boolean,
     cachePropagation?: boolean,
+    onMutate?: (table: string, operation: "delete" | "update" | "insert", records: RecordType[]) => void,
     queryOptions?: Omit<AnyUseQueryOptions, "queryFn" | "queryKey">
 }
 

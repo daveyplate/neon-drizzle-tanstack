@@ -3,7 +3,7 @@ import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
 
-import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
+import { NeonQueryContext, NeonQueryContextType, RecordType } from "../lib/neon-query-provider"
 import { deleteQuery } from "../lib/db-queries"
 import { useAuthDb } from "./use-auth-db"
 import { serializeConfig } from "../lib/utils"
@@ -25,7 +25,7 @@ export function useDelete<
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const { mutateInvalidate, optimisticMutate, cachePropagation } = { ...queryContext, ...context }
+    const { mutateInvalidate, optimisticMutate, cachePropagation, onMutate } = { ...queryContext, ...context }
     const authDb = useAuthDb(db)
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
@@ -92,6 +92,7 @@ export function useDelete<
             })
         },
         onSettled: async (records, error, variables, context) => {
+            onMutate?.(table as string, "delete", records as RecordType[])
             if (optimisticMutate) {
                 const queries = cachePropagation ?
                     queryClient.getQueryCache().findAll({ queryKey: [table], exact: false })
