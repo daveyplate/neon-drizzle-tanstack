@@ -5,6 +5,7 @@ import { AnyUseQueryOptions } from "@tanstack/react-query"
 
 import { useFindMany } from "./use-find-many"
 import { useFindFirst } from "./use-find-first"
+import { useInsert } from "./use-insert"
 
 export function createQueryHooks<
     TQueryResult extends PgQueryResultHKT,
@@ -20,19 +21,27 @@ export function createQueryHooks<
                 TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
             >(
                 table?: TableName | null | false | "",
-                config?: TConfig,
+                config?: TConfig | null,
                 options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
             ) => useFindMany(db, table, config, options),
         useFindFirst:
             <
                 TableName extends keyof TSchema,
-                TConfig extends DBQueryConfig<"one", true, TSchema, TSchema[TableName]>
+                TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
             >(
                 table?: TableName | null | false | "",
                 id?: TSchema[TableName]["columns"]["id"]["_"]["data"] | null,
                 config?: TConfig | null,
                 options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
-            ) => useFindFirst(db, table, id, config, options)
+            ) => useFindFirst(db, table, id, config, options),
+        useInsert:
+            <
+                TableName extends keyof TSchema,
+                TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
+            >(
+                table?: TableName | null | false | "",
+                config?: TConfig | null,
+            ) => useInsert(db, table, config)
     }
 }
 

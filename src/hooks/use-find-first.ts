@@ -14,24 +14,26 @@ export function useFindFirst<
     TSchema extends TablesRelationalConfig,
     TableName extends keyof TSchema,
     TConfig extends DBQueryConfig<"one", true, TSchema, TSchema[TableName]>,
+    TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>,
+    IDType = TSchema[TableName]["columns"]["id"]["_"]["data"]
 >(
     db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
     table?: TableName | null | false | "",
-    id?: TSchema[TableName]["columns"]["id"]["_"]["data"] | null,
+    id?: IDType | null,
     config?: TConfig | null,
     options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
 ) {
-    const { fetchEndpoint, appendTable } = useContext(NeonQueryContext)
+    const { fetchEndpoint, appendTableEndpoint, cachePropagation } = useContext(NeonQueryContext)
     const queryClient = useQueryClient()
     const authDb = useAuthDb(db)
 
     const queryKey = table ? [table, "detail", id, ...((!id && config) ? [serializeConfig(config)] : [])] : []
 
-    const queryResult = useQuery<BuildQueryResult<TSchema, TSchema[TableName], TConfig>>({
+    const queryResult = useQuery<TableType>({
         ...options,
         queryKey,
         queryFn: table ? (async () => {
-            if (fetchEndpoint && appendTable) {
+            if (fetchEndpoint && appendTableEndpoint) {
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}` : "")
             }
 
@@ -40,7 +42,7 @@ export function useFindFirst<
                 ...config
             })
 
-            return result as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
+            return result as TableType
         }) : skipToken,
     })
 
@@ -48,9 +50,9 @@ export function useFindFirst<
 
     // Update the useFindMany list queries with the result data, but only if they have the same number of columns
     useEffect(() => {
-        if (!result || !table) return
+        if (!result || !table || !cachePropagation) return
 
-        const listQueries = queryClient.getQueriesData<{ id: unknown }[]>({ queryKey: [table, "list"], exact: false })
+        const listQueries = queryClient.getQueriesData<{ id: IDType }[]>({ queryKey: [table, "list"], exact: false })
 
         listQueries.forEach(([queryKey, existingData]) => {
             if (!existingData) return
@@ -61,7 +63,7 @@ export function useFindFirst<
 
             queryClient.setQueryData(queryKey, updatedData, { updatedAt: dataUpdatedAt })
         })
-    }, [queryClient, id, result, table, dataUpdatedAt])
+    }, [queryClient, id, result, table, dataUpdatedAt, cachePropagation])
 
     return queryResult
 }

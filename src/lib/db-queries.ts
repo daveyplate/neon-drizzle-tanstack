@@ -11,13 +11,13 @@ export async function findMany<
 >(
     db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
     table: TableName,
-    config?: TConfig
+    config?: TConfig | null
 ) {
     const query = db.query as {
         [K in keyof TSchema]: RelationalQueryBuilder<TSchema, TSchema[K]>
     }
 
-    return await query[table].findMany(config) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>[]
+    return await query[table].findMany({ ...config }) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>[]
 }
 
 export async function findFirst<
@@ -38,7 +38,7 @@ export async function findFirst<
     return await query[table].findFirst(config) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 }
 
-export async function update<
+export async function updateQuery<
     TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig,
@@ -53,7 +53,7 @@ export async function update<
     return await db.update(table).set(values).where(and(id ? sql`id = ${id}` : undefined, where)).returning()
 }
 
-export async function insert<
+export async function insertQuery<
     TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig,
