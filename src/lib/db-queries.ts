@@ -1,6 +1,21 @@
-import { TablesRelationalConfig, DBQueryConfig, BuildQueryResult, and, SQL, sql } from "drizzle-orm"
-import { PgQueryResultHKT, PgDatabase, PgTable, PgUpdateSetSource, PgInsertValue } from "drizzle-orm/pg-core"
-import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query"
+import {
+    BuildQueryResult,
+    DBQueryConfig,
+    SQL,
+    TablesRelationalConfig,
+    and,
+    sql
+} from "drizzle-orm"
+import {
+    PgDatabase,
+    PgInsertValue,
+    PgQueryResultHKT,
+    PgTable,
+    PgUpdateSetSource
+} from "drizzle-orm/pg-core"
+import {
+    RelationalQueryBuilder
+} from "drizzle-orm/pg-core/query-builders/query"
 
 export async function findMany<
     TQueryResult extends PgQueryResultHKT,
@@ -17,7 +32,8 @@ export async function findMany<
         [K in keyof TSchema]: RelationalQueryBuilder<TSchema, TSchema[K]>
     }
 
-    return await query[table].findMany({ ...config }) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>[]
+    return await query[table].findMany({ ...config }) as
+        BuildQueryResult<TSchema, TSchema[TableName], TConfig>[]
 }
 
 export async function findFirst<
@@ -35,7 +51,9 @@ export async function findFirst<
         [K in keyof TSchema]: RelationalQueryBuilder<TSchema, TSchema[K]>
     }
 
-    return await query[table].findFirst({ ...(config as DBQueryConfig<"one", true, TSchema, TSchema[TableName]>) }) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
+    return await query[table].findFirst({
+        ...(config as DBQueryConfig<"one", true, TSchema, TSchema[TableName]>)
+    }) as BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 }
 
 export async function insertQuery<
@@ -63,7 +81,10 @@ export async function updateQuery<
     values: PgUpdateSetSource<TTable>,
     where?: SQL
 ) {
-    return await db.update(table).set(values).where(and(id ? sql`id = ${id}` : undefined, where)).returning()
+    return await db.update(table)
+        .set(values)
+        .where(and(id ? sql`id = ${id}` : undefined, where))
+        .returning()
 }
 
 export async function deleteQuery<
@@ -77,5 +98,7 @@ export async function deleteQuery<
     id: TTable["$inferSelect"]["id"] | null,
     where?: SQL
 ) {
-    return await db.delete(table).where(and(id ? sql`id = ${id}` : undefined, where)).returning()
+    return await db.delete(table)
+        .where(and(id ? sql`id = ${id}` : undefined, where))
+        .returning()
 }

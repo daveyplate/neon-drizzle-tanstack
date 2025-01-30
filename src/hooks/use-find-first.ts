@@ -1,14 +1,30 @@
 import { neonConfig } from "@neondatabase/serverless"
-import { AnyUseQueryOptions, useQueryClient, useQuery, skipToken } from "@tanstack/react-query"
-import { DBQueryConfig, BuildQueryResult, eq, sql, TablesRelationalConfig } from "drizzle-orm"
+import {
+    AnyUseQueryOptions,
+    skipToken,
+    useQuery,
+    useQueryClient
+} from "@tanstack/react-query"
+import {
+    BuildQueryResult,
+    DBQueryConfig,
+    TablesRelationalConfig,
+    eq,
+    sql
+} from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 import { useContext, useEffect } from "react"
+
 import { findFirst } from "../lib/db-queries"
-import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
+import {
+    NeonQueryContext,
+    NeonQueryContextType
+} from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
+
 import { useAuthDb } from "./use-auth-db"
-import { useUpdate } from "./use-update"
 import { useDelete } from "./use-delete"
+import { useUpdate } from "./use-update"
 
 export function useFindFirst<
     TQueryResult extends PgQueryResultHKT,
@@ -58,16 +74,18 @@ export function useFindFirst<
     useEffect(() => {
         if (!record || !table || !cachePropagation) return
 
-        const listQueries = queryClient.getQueriesData<{ id: IDType }[]>({ queryKey: [table, "list"], exact: false })
+        const listQueries = queryClient.getQueriesData<{ id: IDType }[]>({
+            queryKey: [table, "list"],
+            exact: false
+        })
 
         listQueries.forEach(([queryKey, existingData]) => {
             if (!existingData) return
 
             const updatedData = existingData.map((item) =>
-                (item.id == id && Object.keys(item).length == Object.keys(record).length) ? record : item
-            )
+                (item.id == id && Object.keys(item).length == Object.keys(record).length) ? record : item)
 
-            queryClient.setQueryData(queryKey, updatedData, { updatedAt: dataUpdatedAt })
+            queryClient.setQueryData(queryKey, updatedData)
         })
     }, [queryClient, id, record, table, dataUpdatedAt, cachePropagation])
 

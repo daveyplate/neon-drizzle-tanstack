@@ -1,15 +1,29 @@
 import { neonConfig } from "@neondatabase/serverless"
-import { AnyUseQueryOptions, useQueryClient, useQuery, skipToken } from "@tanstack/react-query"
-import { DBQueryConfig, BuildQueryResult, TablesRelationalConfig } from "drizzle-orm"
+import {
+    AnyUseQueryOptions,
+    skipToken,
+    useQuery,
+    useQueryClient
+} from "@tanstack/react-query"
+import {
+    BuildQueryResult,
+    DBQueryConfig,
+    TablesRelationalConfig
+} from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 import { useContext, useEffect } from "react"
+
 import { findMany } from "../lib/db-queries"
-import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
+import {
+    NeonQueryContext,
+    NeonQueryContextType
+} from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
+
 import { useAuthDb } from "./use-auth-db"
+import { useDelete } from "./use-delete"
 import { useInsert } from "./use-insert"
 import { useUpdate } from "./use-update"
-import { useDelete } from "./use-delete"
 
 export function useFindMany<
     TQueryResult extends PgQueryResultHKT,
@@ -44,6 +58,7 @@ export function useFindMany<
             }
 
             const records = await findMany(authDb, table, config)
+
             return records as TableType[]
         }) : skipToken,
     })
@@ -56,9 +71,13 @@ export function useFindMany<
 
         records.forEach((record) => {
             const recordWithId = record as { id: IDType }
+
             if (!recordWithId.id) return
 
-            queryClient.setQueryData([table, "detail", recordWithId.id], record, { updatedAt: dataUpdatedAt })
+            queryClient.setQueryData(
+                [table, "detail", recordWithId.id],
+                record, { updatedAt: dataUpdatedAt }
+            )
 
             // TODO propogate each record to all other lists?
         })

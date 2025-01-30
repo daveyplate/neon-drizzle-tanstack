@@ -1,12 +1,22 @@
-import { useContext } from "react"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
-import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
+import {
+    BuildQueryResult,
+    DBQueryConfig,
+    SQL,
+    TablesRelationalConfig
+} from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
+import { useContext } from "react"
 
-import { NeonQueryContext, NeonQueryContextType, RecordType } from "../lib/neon-query-provider"
 import { deleteQuery } from "../lib/db-queries"
-import { useAuthDb } from "./use-auth-db"
+import {
+    NeonQueryContext,
+    NeonQueryContextType,
+    RecordType
+} from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
+
+import { useAuthDb } from "./use-auth-db"
 
 export function useDelete<
     TQueryResult extends PgQueryResultHKT,
@@ -50,15 +60,18 @@ export function useDelete<
 
             queries.forEach((query) => {
                 const queryKey = query.queryKey as string[]
+
                 if (queryKey.length <= 1) return
 
                 if (queryKey[1] == "list") {
                     const previousData = query.state.data as { id: IDType }[]
+
                     if (!previousData?.find((data) => data.id == id)) return
 
                     queryClient.setQueryData(queryKey, previousData.filter((data) => data.id != id))
                 } else if (queryKey[1] == "detail") {
                     const previousData = query.state.data
+
                     if (!previousData) return
 
                     queryClient.setQueryData(queryKey, null, { updatedAt: Date.now() })
@@ -84,8 +97,10 @@ export function useDelete<
             if (!optimisticMutate || !id) return
 
             const previousQueries = context!.previousQueries
+
             previousQueries.forEach((query) => {
                 const previousData = query.state.data
+
                 if (!previousData) return
 
                 queryClient.setQueryData(query.queryKey, previousData, { updatedAt: query.state.dataUpdatedAt })
@@ -101,10 +116,12 @@ export function useDelete<
                 records?.forEach((record) => {
                     queries.forEach((query) => {
                         const queryKey = query.queryKey as string[]
+
                         if (queryKey.length <= 1) return
 
                         if (queryKey[1] == "list") {
                             const previousData = query.state.data as { id: IDType }[]
+
                             if (!previousData?.find((data) => data.id == record.id)) return
 
                             queryClient.setQueryData(queryKey, previousData.filter((data) => data.id != record.id))

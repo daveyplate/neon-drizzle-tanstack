@@ -2,7 +2,7 @@
 
 import { neonConfig } from "@neondatabase/serverless"
 import { AnyUseQueryOptions } from "@tanstack/react-query"
-import { createContext, ReactNode, useEffect } from "react"
+import { ReactNode, createContext, useEffect } from "react"
 
 export type RecordType = Record<string, unknown> & { id: unknown }
 export type NeonQueryContextType = {
@@ -18,9 +18,11 @@ export type NeonQueryContextType = {
 
 export const NeonQueryContext = createContext<NeonQueryContextType>({} as NeonQueryContextType)
 
-export const NeonQueryProvider = (
-    { children, fetchEndpoint, optimisticMutate = true, cachePropagation = true, ...props }: { children: ReactNode } & Omit<NeonQueryContextType, "setToken">
-) => {
+export const NeonQueryProvider = ({
+    children, fetchEndpoint, optimisticMutate = true, cachePropagation = true, ...props
+}: {
+    children: ReactNode
+} & Omit<NeonQueryContextType, "setToken">) => {
     useEffect(() => {
         if (!fetchEndpoint) return
 

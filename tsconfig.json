@@ -10,8 +10,9 @@
         "allowJs": true,
         "incremental": true,
         "lib": [
-            "ESNext",
-            "DOM"
+            "dom",
+            "dom.iterable",
+            "esnext"
         ],
         "module": "esnext",
         "moduleResolution": "node"

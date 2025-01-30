@@ -1,47 +1,57 @@
-import globals from "globals"
-import pluginJs from "@eslint/js"
-import tseslint from "typescript-eslint"
-import pluginReact from "eslint-plugin-react"
-import pluginReactHooks from "eslint-plugin-react-hooks"
-import reactHooksAddons from "eslint-plugin-react-hooks-addons"
-import stylistic from "@stylistic/eslint-plugin"
+import { dirname } from "path"
+import { fileURLToPath } from "url"
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
-  {
-    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-    settings: {
-      react: {
-        version: "detect"
-      }
-    },
-  },
-  {
-    ignores: ["node_modules/*", "dist/*", "src/components/ui/*",],
-  },
-  { languageOptions: { globals: { ...globals.browser, ...globals.node } }, },
-  pluginJs.configs.recommended,
-  pluginReact.configs.flat.recommended,
-  reactHooksAddons.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-      "@stylistic": stylistic,
-    },
-    rules: {
-      ...pluginReactHooks.configs.recommended.rules,
-      "react/react-in-jsx-scope": "off",
-      "@typescript-eslint/no-unused-vars": "off",
-      "react/no-unescaped-entities": "off",
-      "@stylistic/quotes": "warn",
-      "@stylistic/jsx-newline": ["warn", { "prevent": true, "allowMultilines": true }],
-      "@stylistic/jsx-max-props-per-line": ["warn", { "maximum": 1, "when": "multiline" }],
-      "@stylistic/jsx-one-expression-per-line": "warn",
-      "@stylistic/jsx-first-prop-new-line": "warn",
-      "@stylistic/jsx-closing-bracket-location": "warn",
-      "@stylistic/jsx-self-closing-comp": "warn",
-      "@stylistic/no-multiple-empty-lines": ["warn", { "max": 1, "maxEOF": 0 }],
-    },
-  }
+import { FlatCompat } from "@eslint/eslintrc"
+import stylistic from "@stylistic/eslint-plugin"
+import importPlugin from "eslint-plugin-import"
+import importNewlinesPlugin from "eslint-plugin-import-newlines"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const compat = new FlatCompat({ baseDirectory: __dirname, })
+
+const eslintConfig = [
+    ...compat.extends("next/core-web-vitals", "next/typescript"),
+    { ignores: ["dist", "out", "src/components/ui", "docs"], },
+    {
+        ...importPlugin.flatConfigs.recommended,
+        plugins: {
+            "@stylistic": stylistic,
+            "import-newlines": importNewlinesPlugin
+        },
+        rules: {
+            "@next/next/no-html-link-for-pages": "off",
+            "react/no-unescaped-entities": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+            "@stylistic/semi": ["warn", "never"],
+            "@stylistic/quotes": "warn",
+            "@stylistic/jsx-newline": ["warn", { "prevent": false }],
+            "@stylistic/jsx-max-props-per-line": ["warn", { "maximum": 1, "when": "multiline" }],
+            "@stylistic/jsx-one-expression-per-line": "warn",
+            "@stylistic/jsx-first-prop-new-line": "warn",
+            "@stylistic/jsx-closing-bracket-location": "warn",
+            "@stylistic/jsx-self-closing-comp": "warn",
+            "@stylistic/no-multiple-empty-lines": ["warn", { "max": 1, "maxEOF": 0, "maxBOF": 0 }],
+            "@stylistic/function-paren-newline": ["warn", "multiline"],
+            "@stylistic/padding-line-between-statements": ["warn",
+                { blankLine: "always", prev: "*", next: "return" },
+                { blankLine: "always", prev: ["const", "let", "var"], next: "*" },
+                { blankLine: "any", prev: ["const", "let", "var"], next: ["const", "let", "var"] },
+                { blankLine: "always", prev: "directive", next: "*" }, { blankLine: "any", prev: "directive", next: "directive" },
+                { blankLine: "always", prev: ["case", "default"], next: "*" }
+            ],
+            "@stylistic/jsx-function-call-newline": ["warn", "always"],
+            "import/order": ["warn", {
+                "newlines-between": "always",
+                "alphabetize": { "order": "asc" },
+                "named": true,
+                "warnOnUnassignedImports": true
+            }],
+            "import/newline-after-import": "warn",
+            "import-newlines/enforce": ["warn", { "max-len": 80 }]
+        }
+    }
 ]
+
+export default eslintConfig

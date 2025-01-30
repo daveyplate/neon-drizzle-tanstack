@@ -1,22 +1,20 @@
-import { TablesRelationalConfig, DBQueryConfig } from "drizzle-orm"
+import { AnyUseQueryOptions } from "@tanstack/react-query"
+import { DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 
-import { AnyUseQueryOptions } from "@tanstack/react-query"
+import { NeonQueryContextType } from "../lib/neon-query-provider"
 
-import { useFindMany } from "./use-find-many"
+import { useDelete } from "./use-delete"
 import { useFindFirst } from "./use-find-first"
+import { useFindMany } from "./use-find-many"
 import { useInsert } from "./use-insert"
 import { useUpdate } from "./use-update"
-import { NeonQueryContextType } from "../lib/neon-query-provider"
-import { useDelete } from "./use-delete"
 
 export function createQueryHooks<
     TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig,
->(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>
-) {
+>(db: PgDatabase<TQueryResult, TFullSchema, TSchema>) {
     return {
         useFindMany:
             <

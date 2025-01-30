@@ -1,4 +1,9 @@
-import { DBQueryConfig, SQL, TableRelationalConfig, TablesRelationalConfig } from "drizzle-orm"
+import {
+    DBQueryConfig,
+    SQL,
+    TableRelationalConfig,
+    TablesRelationalConfig
+} from "drizzle-orm"
 import { CasingCache } from "drizzle-orm/casing"
 
 export function serializeConfig<
@@ -13,7 +18,8 @@ export function serializeConfig<
             const funcStr = value.toString()
             // Match the content of the return statement
             const match = funcStr.match(/return\s+([^;}]*)/)
-            // Return the extracted part or the entire function if no match is found
+
+            // Return the extracted part or entire function if no match found
             return match ? match[1].replace(/\s+/g, " ").trim() : funcStr
         }
 
