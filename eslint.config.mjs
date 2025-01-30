@@ -36,7 +36,11 @@ const eslintConfig = [
             "@stylistic/function-paren-newline": ["warn", "multiline"],
             "@stylistic/padding-line-between-statements": ["warn",
                 { blankLine: "always", prev: "*", next: "return" },
-                { blankLine: "always", prev: ["const", "let", "var"], next: "*" },
+                { blankLine: "always", prev: "if", next: "*" },
+                { blankLine: "any", prev: "if", next: "if" },
+                { blankLine: "always", prev: "*", next: "if" },
+                { blankLine: "any", prev: ["const", "let", "var"], next: "*" },
+                { blankLine: "always", prev: ["*"], next: ["const", "let", "var"] },
                 { blankLine: "any", prev: ["const", "let", "var"], next: ["const", "let", "var"] },
                 { blankLine: "always", prev: "directive", next: "*" }, { blankLine: "any", prev: "directive", next: "directive" },
                 { blankLine: "always", prev: ["case", "default"], next: "*" }

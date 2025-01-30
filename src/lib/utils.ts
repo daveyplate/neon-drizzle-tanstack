@@ -31,17 +31,12 @@ export function serializeConfig<
 
                 escapeName: function (name: string): string {
                     return name
-
-                    // throw new Error("Function not implemented.")
                 },
                 escapeParam: function (num: number, value: unknown): string {
                     return `${num}-${value}`
-
-                    // throw new Error("Function not implemented.")
                 },
                 escapeString: function (str: string): string {
                     return str
-                    // throw new Error("Function not implemented.")
                 }
             })
 

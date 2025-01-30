@@ -44,9 +44,15 @@ export function useFindFirst<
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 
     const queryContext = useContext(NeonQueryContext)
-    const { fetchEndpoint, appendTableEndpoint, cachePropagation, queryOptions } = { ...queryContext, ...context }
     const queryClient = useQueryClient()
     const authDb = useAuthDb(db)
+
+    const {
+        fetchEndpoint,
+        appendTableEndpoint,
+        cachePropagation,
+        queryOptions
+    } = { ...queryContext, ...context }
 
     const queryKey = table ? [table, "detail", id, ...((!id && config) ? [serializeConfig(config)] : [])] : []
 

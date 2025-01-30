@@ -69,10 +69,9 @@ export function useInsert<
             if (!optimisticMutate) return
 
             const previousData = context?.previousQueryState?.data as TableType[]
+            if (!previousData) return
 
-            if (previousData) {
-                queryClient.setQueryData(queryKey, previousData, { updatedAt: context!.previousQueryState!.dataUpdatedAt })
-            }
+            queryClient.setQueryData(queryKey, previousData, { updatedAt: context!.previousQueryState!.dataUpdatedAt })
         },
         onSettled: async (records, error, values, context) => {
             onMutate?.(table as string, "delete", records as RecordType[])
@@ -85,9 +84,9 @@ export function useInsert<
                 }
             }
 
-            if (mutateInvalidate) {
-                await queryClient.invalidateQueries({ queryKey: [table] })
-            }
+            if (!mutateInvalidate) return
+
+            await queryClient.invalidateQueries({ queryKey: [table] })
         },
         mutationKey: [table, "insert"]
     })

@@ -35,8 +35,14 @@ export function useUpdate<
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const { mutateInvalidate, optimisticMutate, cachePropagation, onMutate } = { ...queryContext, ...context }
     const authDb = useAuthDb(db)
+
+    const {
+        mutateInvalidate,
+        optimisticMutate,
+        cachePropagation,
+        onMutate
+    } = { ...queryContext, ...context }
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
@@ -61,12 +67,10 @@ export function useUpdate<
 
             queries.forEach((query) => {
                 const queryKey = query.queryKey as string[]
-
                 if (queryKey.length <= 1) return
 
                 if (queryKey[1] == "list") {
                     const previousData = query.state.data as { id: IDType }[]
-
                     if (!previousData?.find((data) => data.id == id)) return
 
                     queryClient.setQueryData(queryKey, previousData.map((data) => {
@@ -78,7 +82,6 @@ export function useUpdate<
                     }))
                 } else if (queryKey[1] == "detail") {
                     const previousData = query.state.data as TableType
-
                     if (!previousData) return
 
                     queryClient.setQueryData(queryKey, { ...previousData, ...values }, { updatedAt: Date.now() })
@@ -104,10 +107,8 @@ export function useUpdate<
             if (!optimisticMutate || !id) return
 
             const previousQueries = context!.previousQueries
-
             previousQueries.forEach((query) => {
                 const previousData = query.state.data
-
                 if (!previousData) return
 
                 queryClient.setQueryData(query.queryKey, previousData, { updatedAt: query.state.dataUpdatedAt })
@@ -124,7 +125,6 @@ export function useUpdate<
                 records?.forEach((record) => {
                     queries.forEach((query) => {
                         const queryKey = query.queryKey as string[]
-
                         if (queryKey.length <= 1) return
 
                         if (queryKey[1] == "list") {

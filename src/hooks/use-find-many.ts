@@ -42,9 +42,15 @@ export function useFindMany<
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 
     const queryContext = useContext(NeonQueryContext)
-    const { fetchEndpoint, appendTableEndpoint, cachePropagation, queryOptions } = { ...queryContext, ...context }
     const queryClient = useQueryClient()
     const authDb = useAuthDb(db)
+
+    const {
+        fetchEndpoint,
+        appendTableEndpoint,
+        cachePropagation,
+        queryOptions
+    } = { ...queryContext, ...context }
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
@@ -58,7 +64,6 @@ export function useFindMany<
             }
 
             const records = await findMany(authDb, table, config)
-
             return records as TableType[]
         }) : skipToken,
     })
@@ -71,7 +76,6 @@ export function useFindMany<
 
         records.forEach((record) => {
             const recordWithId = record as { id: IDType }
-
             if (!recordWithId.id) return
 
             queryClient.setQueryData(
