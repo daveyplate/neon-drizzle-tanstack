@@ -8,7 +8,7 @@ import {
     sql
 } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
-import { useContext, useEffect } from "react"
+import { useContext, useEffect, useState } from "react"
 
 import { findFirst } from "../lib/db-queries"
 import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
@@ -30,10 +30,13 @@ export function useFindFirst<
     table?: TableName | null | false | "",
     id?: IDType | null,
     config?: TConfig | null,
-    options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
+    options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn" | "refetchOnMount"> | null,
     context?: NeonQueryContextType | null
 ) {
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
+
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => { setIsMounted(true) }, [])
 
     const queryContext = useContext(NeonQueryContext)
     const queryClient = useQueryClient()
@@ -52,7 +55,7 @@ export function useFindFirst<
         ...queryOptions,
         ...options,
         queryKey,
-        queryFn: table ? (async () => {
+        queryFn: (isMounted && table) ? (async () => {
             if (fetchEndpoint && appendTableEndpoint) {
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}` : "")
             }

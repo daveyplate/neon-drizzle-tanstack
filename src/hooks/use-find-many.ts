@@ -2,7 +2,7 @@ import { neonConfig } from "@neondatabase/serverless"
 import { AnyUseQueryOptions, skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
-import { useContext, useEffect } from "react"
+import { useContext, useEffect, useState } from "react"
 
 import { findMany } from "../lib/db-queries"
 import { NeonQueryContext, NeonQueryContextType } from "../lib/neon-query-provider"
@@ -24,9 +24,12 @@ export function useFindMany<
     db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
     table?: TableName | null | false | "",
     config?: TConfig | null,
-    options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
+    options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn" | "refetchOnMount"> | null,
     context?: NeonQueryContextType | null
 ) {
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => { setIsMounted(true) }, [])
+
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 
     const queryContext = useContext(NeonQueryContext)
@@ -46,7 +49,7 @@ export function useFindMany<
         ...queryOptions,
         ...options,
         queryKey,
-        queryFn: table ? (async () => {
+        queryFn: (isMounted && table) ? (async () => {
             if (fetchEndpoint && appendTableEndpoint) {
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}`
             }
