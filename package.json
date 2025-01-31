@@ -1,7 +1,7 @@
 {
     "name": "@daveyplate/neon-drizzle-tanstack",
     "homepage": "https://github.com/daveyplate/neon-drizzle-tanstack",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Neon Drizzle Tanstack Query Hooks",
     "type": "module",
     "exports": {
