@@ -8,6 +8,7 @@ import { useDelete } from "./use-delete"
 import { useFindFirst } from "./use-find-first"
 import { useFindMany } from "./use-find-many"
 import { useInsert } from "./use-insert"
+import { useMutate } from "./use-mutate"
 import { useUpdate } from "./use-update"
 
 export function createQueryHooks<
@@ -63,6 +64,15 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useDelete(db, table, config, context)
+            ) => useDelete(db, table, config, context),
+        useMutate:
+            <
+                TableName extends keyof TSchema,
+                TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
+            >(
+                table?: TableName | null | false | "",
+                config?: TConfig | null,
+                context?: NeonQueryContextType | null
+            ) => useMutate(db, table, config, context)
     }
 }
