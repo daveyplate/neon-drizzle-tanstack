@@ -9,9 +9,9 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
-        "./server": {
-            "types": "./dist/server.d.ts",
-            "default": "./dist/server.js"
+        "./queries": {
+            "types": "./dist/queries.d.ts",
+            "default": "./dist/queries.js"
         }
     },
     "files": [
