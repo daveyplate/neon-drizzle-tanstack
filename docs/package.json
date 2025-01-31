@@ -1,0 +1,38 @@
+{
+    "name": "fumadocs",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev --turbo",
+        "start": "next start",
+        "postinstall": "fumadocs-mdx",
+        "check-types": "tsc --noEmit"
+    },
+    "dependencies": {
+        "fumadocs-core": "15.0.0",
+        "fumadocs-mdx": "11.3.2",
+        "fumadocs-ui": "15.0.0",
+        "next": "15.1.6",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@stylistic/eslint-plugin": "^3.0.0",
+        "@tailwindcss/postcss": "^4.0.0",
+        "@types/mdx": "^2.0.13",
+        "@types/node": "22.12.0",
+        "@types/react": "^19.0.7",
+        "@types/react-dom": "^19.0.3",
+        "eslint": "^9",
+        "eslint-config-next": "15.1.6",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-import-newlines": "^1.4.0",
+        "postcss": "^8.5.1",
+        "tailwindcss": "^4.0.0",
+        "turbo": "^2.3.4",
+        "typescript": "^5.7.3"
+    },
+    "packageManager": "pnpm@10.1.0"
+}
