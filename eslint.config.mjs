@@ -34,7 +34,6 @@ const eslintConfig = [
             "@stylistic/jsx-closing-tag-location": ["warn"],
             "@stylistic/jsx-self-closing-comp": "warn",
             "@stylistic/no-multiple-empty-lines": ["warn", { max: 1, maxEOF: 0, maxBOF: 0 }],
-            "@stylistic/function-paren-newline": ["warn", "multiline"],
             "@stylistic/padding-line-between-statements": ["warn",
                 { blankLine: "always", prev: "*", next: "return" },
                 { blankLine: "always", prev: "if", next: "*" },
