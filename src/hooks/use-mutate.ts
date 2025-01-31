@@ -1,5 +1,4 @@
-import type { DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
-import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
+import type { DBQueryConfig, ExtractTablesWithRelations } from "drizzle-orm"
 
 import type { NeonQueryContextType } from "../lib/neon-query-provider"
 
@@ -8,20 +7,18 @@ import { useInsert } from "./use-insert"
 import { useUpdate } from "./use-update"
 
 export function useMutate<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
-    TableName extends keyof TSchema,
-    TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>
+    TableName extends keyof ExtractTablesWithRelations<TFullSchema>,
+    TConfig extends DBQueryConfig<"many", true, ExtractTablesWithRelations<TFullSchema>, ExtractTablesWithRelations<TFullSchema>[TableName]>
 >(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    schema: TFullSchema,
     table?: TableName | null | false | "",
     config?: TConfig | null,
     context?: NeonQueryContextType | null
 ) {
-    const { update } = useUpdate(db, table, config, context)
-    const { delete: deleteRecord } = useDelete(db, table, config, context)
-    const { insert } = useInsert(db, table, config, context)
+    const { update } = useUpdate(schema, table, config, context)
+    const { delete: deleteRecord } = useDelete(schema, table, config, context)
+    const { insert } = useInsert(schema, table, config, context)
 
     return { insert, update, delete: deleteRecord }
 }

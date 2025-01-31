@@ -2,10 +2,13 @@
 
 import { neonConfig } from "@neondatabase/serverless"
 import { AnyUseQueryOptions } from "@tanstack/react-query"
+import type { TablesRelationalConfig } from "drizzle-orm"
+import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 import { ReactNode, createContext, useEffect } from "react"
 
 export type RecordType = Record<string, unknown> & { id: unknown }
 export type NeonQueryContextType = {
+    db: PgDatabase<PgQueryResultHKT, Record<string, unknown>, TablesRelationalConfig>,
     token?: string | null,
     fetchEndpoint?: string,
     appendTableEndpoint?: boolean,
@@ -20,7 +23,7 @@ export type NeonQueryContextType = {
     queryOptions?: Omit<AnyUseQueryOptions, "queryFn" | "queryKey">
 }
 
-export const NeonQueryContext = createContext<NeonQueryContextType>({})
+export const NeonQueryContext = createContext<NeonQueryContextType>({} as unknown as NeonQueryContextType)
 
 export const NeonQueryProvider = ({
     children, fetchEndpoint, optimisticMutate = true, cachePropagation = true, ...props

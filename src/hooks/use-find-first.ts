@@ -3,11 +3,10 @@ import { AnyUseQueryOptions, skipToken, useQuery, useQueryClient } from "@tansta
 import {
     BuildQueryResult,
     DBQueryConfig,
-    TablesRelationalConfig,
+    type ExtractTablesWithRelations,
     eq,
     sql
 } from "drizzle-orm"
-import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 import { useContext, useEffect, useState } from "react"
 
 import { findFirst } from "../lib/db-queries"
@@ -19,28 +18,27 @@ import { useDelete } from "./use-delete"
 import { useUpdate } from "./use-update"
 
 export function useFindFirst<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
+    TSchema extends ExtractTablesWithRelations<TFullSchema>,
     TableName extends keyof TSchema,
     TConfig extends DBQueryConfig<"one", true, TSchema, TSchema[TableName]>,
-    IDType = TSchema[TableName]["columns"]["id"]["_"]["data"]
+    TableType extends BuildQueryResult<TSchema, TSchema[TableName], TConfig>,
+    IDType extends TSchema[TableName]["columns"]["id"]["_"]["data"]
 >(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    schema: TFullSchema,
     table?: TableName | null | false | "",
     id?: IDType | null,
     config?: TConfig | null,
     options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn" | "refetchOnMount"> | null,
     context?: NeonQueryContextType | null
 ) {
-    type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
-
     const [isMounted, setIsMounted] = useState(false)
     useEffect(() => { setIsMounted(true) }, [])
 
+    const db = useAuthDb<TFullSchema, TSchema>()
+
     const queryContext = useContext(NeonQueryContext)
     const queryClient = useQueryClient()
-    const authDb = useAuthDb(db)
 
     const {
         fetchEndpoint,
@@ -60,7 +58,7 @@ export function useFindFirst<
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}` : "")
             }
 
-            const record = await findFirst(authDb, table, {
+            const record = await findFirst(db, table, {
                 where: id ? eq(sql`id`, id) : undefined,
                 ...config
             })
@@ -90,8 +88,8 @@ export function useFindFirst<
         })
     }, [queryClient, id, record, table, dataUpdatedAt, cachePropagation])
 
-    const { update: updateRecord } = useUpdate(db, table, config)
-    const { delete: deleteRecord } = useDelete(db, table, config)
+    const { update: updateRecord } = useUpdate<TFullSchema, TSchema, TableName, TConfig>(schema, table, config)
+    const { delete: deleteRecord } = useDelete<TFullSchema, TSchema, TableName, TConfig>(schema, table, config)
 
     const update = (values: Partial<TableType>) => updateRecord(id, values)
 

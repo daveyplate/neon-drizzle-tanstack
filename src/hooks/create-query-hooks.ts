@@ -1,6 +1,5 @@
 import { AnyUseQueryOptions } from "@tanstack/react-query"
-import { DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
-import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
+import { DBQueryConfig, type ExtractTablesWithRelations } from "drizzle-orm"
 
 import { NeonQueryContextType } from "../lib/neon-query-provider"
 
@@ -11,11 +10,9 @@ import { useInsert } from "./use-insert"
 import { useMutate } from "./use-mutate"
 import { useUpdate } from "./use-update"
 
-export function createQueryHooks<
-    TQueryResult extends PgQueryResultHKT,
-    TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
->(db: PgDatabase<TQueryResult, TFullSchema, TSchema>) {
+export function createQueryHooks<TFullSchema extends Record<string, unknown>>(schema: TFullSchema) {
+    type TSchema = ExtractTablesWithRelations<TFullSchema>
+
     return {
         useFindMany:
             <
@@ -26,7 +23,7 @@ export function createQueryHooks<
                 config?: TConfig | null,
                 options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
                 context?: NeonQueryContextType | null
-            ) => useFindMany(db, table, config, options, context),
+            ) => useFindMany(schema, table, config, options, context),
         useFindFirst:
             <
                 TableName extends keyof TSchema,
@@ -37,7 +34,7 @@ export function createQueryHooks<
                 config?: TConfig | null,
                 options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null,
                 context?: NeonQueryContextType | null
-            ) => useFindFirst(db, table, id, config, options, context),
+            ) => useFindFirst(schema, table, id, config, options, context),
         useInsert:
             <
                 TableName extends keyof TSchema,
@@ -46,7 +43,7 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useInsert(db, table, config, context),
+            ) => useInsert(schema, table, config, context),
         useUpdate:
             <
                 TableName extends keyof TSchema,
@@ -55,7 +52,7 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useUpdate(db, table, config, context),
+            ) => useUpdate(schema, table, config, context),
         useDelete:
             <
                 TableName extends keyof TSchema,
@@ -64,7 +61,7 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useDelete(db, table, config, context),
+            ) => useDelete(schema, table, config, context),
         useMutate:
             <
                 TableName extends keyof TSchema,
@@ -73,6 +70,6 @@ export function createQueryHooks<
                 table?: TableName | null | false | "",
                 config?: TConfig | null,
                 context?: NeonQueryContextType | null
-            ) => useMutate(db, table, config, context)
+            ) => useMutate(schema, table, config, context)
     }
 }

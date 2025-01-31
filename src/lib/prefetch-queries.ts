@@ -26,8 +26,6 @@ export async function prefetchFindMany<
 ) {
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 
-    if (process.env.NODE_ENV === "development") await new Promise((resolve) => setTimeout(resolve, 250))
-
     const queryKey = [table, "list", ...(config ? [serializeConfig(config)] : [])]
     const results = await findMany(db, table, config)
 
@@ -58,8 +56,6 @@ export async function prefetchFindFirst<
     options?: Omit<AnyUseQueryOptions, "queryKey" | "queryFn"> | null
 ) {
     type TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
-
-    if (process.env.NODE_ENV === "development") await new Promise((resolve) => setTimeout(resolve, 250))
 
     const queryKey = [table, "detail", id, ...((!id && config) ? [serializeConfig(config)] : [])]
 

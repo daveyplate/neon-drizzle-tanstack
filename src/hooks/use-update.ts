@@ -1,7 +1,7 @@
 import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
-import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
-import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
+import { BuildQueryResult, DBQueryConfig, type ExtractTablesWithRelations, SQL } from "drizzle-orm"
+import { PgTable } from "drizzle-orm/pg-core"
 import { useContext } from "react"
 
 import { updateQuery } from "../lib/db-queries"
@@ -11,23 +11,22 @@ import { serializeConfig } from "../lib/utils"
 import { useAuthDb } from "./use-auth-db"
 
 export function useUpdate<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
+    TSchema extends ExtractTablesWithRelations<TFullSchema>,
     TableName extends keyof TSchema,
     TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>,
     TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>,
     IDType = TSchema[TableName]["columns"]["id"]["_"]["data"]
 >(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    schema: TFullSchema,
     table?: TableName | null | false | "",
     config?: TConfig | null,
     context?: NeonQueryContextType | null
 ) {
+    const db = useAuthDb()
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const authDb = useAuthDb(db)
 
     const {
         appendTableEndpoint,
@@ -43,14 +42,14 @@ export function useUpdate<
     const mutation = useMutation({
         mutationFn: ({ id, values, where }: {
             id?: IDType | null,
-            values?: Partial<TableType>,
+            values?: Partial<Omit<TableType, "id" | "createdAt">>,
             where?: SQL
         }) => {
             if (fetchEndpoint && appendTableEndpoint) {
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}/update` : "/update")
             }
 
-            return updateQuery(authDb, pgTable, id, { ...values }, where)
+            return updateQuery(db, pgTable, id, { ...values }, where)
         },
         onMutate: async ({ values, id }) => {
             if (!optimisticMutate || !id) return
@@ -159,7 +158,7 @@ export function useUpdate<
 
     const { variables, mutate } = mutation
 
-    const update = (id?: IDType | null, values?: Partial<TableType>, where?: SQL) => {
+    const update = (id?: IDType | null, values?: Partial<Omit<TableType, "id" | "createdAt">>, where?: SQL) => {
         mutate({ id, values, where })
     }
 

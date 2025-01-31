@@ -1,7 +1,7 @@
 import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
-import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
-import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
+import { BuildQueryResult, DBQueryConfig, type ExtractTablesWithRelations } from "drizzle-orm"
+import { PgTable } from "drizzle-orm/pg-core"
 import { useContext } from "react"
 
 import { insertQuery } from "../lib/db-queries"
@@ -11,18 +11,18 @@ import { serializeConfig } from "../lib/utils"
 import { useAuthDb } from "./use-auth-db"
 
 export function useInsert<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
+    TSchema extends ExtractTablesWithRelations<TFullSchema>,
     TableName extends keyof TSchema,
     TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>,
-    TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>,
+    TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>
 >(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    schema: TFullSchema,
     table?: TableName | null | false | "",
     config?: TConfig | null,
     context?: NeonQueryContextType | null
 ) {
+    const db = useAuthDb()
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
@@ -34,8 +34,6 @@ export function useInsert<
         onMutate
     } = { ...queryContext, ...context }
 
-    const authDb = useAuthDb(db)
-
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
     const mutation = useMutation({
@@ -44,7 +42,7 @@ export function useInsert<
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}/insert`
             }
 
-            return insertQuery(authDb, pgTable, values)
+            return insertQuery(db, pgTable, values)
         },
         onMutate: async (values) => {
             if (!optimisticMutate) return

@@ -1,7 +1,7 @@
 import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
-import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
-import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
+import { BuildQueryResult, DBQueryConfig, type ExtractTablesWithRelations, SQL } from "drizzle-orm"
+import { PgTable } from "drizzle-orm/pg-core"
 import { useContext } from "react"
 
 import { deleteQuery } from "../lib/db-queries"
@@ -11,23 +11,22 @@ import { serializeConfig } from "../lib/utils"
 import { useAuthDb } from "./use-auth-db"
 
 export function useDelete<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
-    TSchema extends TablesRelationalConfig,
+    TSchema extends ExtractTablesWithRelations<TFullSchema>,
     TableName extends keyof TSchema,
     TConfig extends DBQueryConfig<"many", true, TSchema, TSchema[TableName]>,
     TableType = BuildQueryResult<TSchema, TSchema[TableName], TConfig>,
     IDType = TSchema[TableName]["columns"]["id"]["_"]["data"]
 >(
-    db: PgDatabase<TQueryResult, TFullSchema, TSchema>,
+    schema: TFullSchema,
     table?: TableName | null | false | "",
     config?: TConfig | null,
     context?: NeonQueryContextType | null
 ) {
-    const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const authDb = useAuthDb(db)
+    const db = useAuthDb()
+    const pgTable = db._.fullSchema[table as string] as PgTable
 
     const {
         appendTableEndpoint,
@@ -49,7 +48,7 @@ export function useDelete<
                 neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}/delete` : "/delete")
             }
 
-            return deleteQuery(authDb, pgTable, id, where)
+            return deleteQuery(db, pgTable, id, where)
         },
         onMutate: async ({ id }) => {
             if (!optimisticMutate || !id) return

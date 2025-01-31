@@ -1,17 +1,17 @@
-import { TablesRelationalConfig } from "drizzle-orm"
+import type { TablesRelationalConfig } from "drizzle-orm"
 import { NeonHttpDatabase } from "drizzle-orm/neon-http"
-import { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
+import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core"
 import { useContext } from "react"
 
 import { NeonQueryContext } from "../lib/neon-query-provider"
 
 export function useAuthDb<
-    TQueryResult extends PgQueryResultHKT,
     TFullSchema extends Record<string, unknown>,
     TSchema extends TablesRelationalConfig
->(db: PgDatabase<TQueryResult, TFullSchema, TSchema>,) {
-    const { token } = useContext(NeonQueryContext)
-    const neonDb = db as unknown as NeonHttpDatabase<TSchema>
+>(schema?: TFullSchema) {
 
-    return neonDb.$withAuth(token || "") as unknown as PgDatabase<TQueryResult, TFullSchema, TSchema>
+    const { token, db } = useContext(NeonQueryContext)
+    const neonDb = db as unknown as NeonHttpDatabase
+
+    return (token ? neonDb.$withAuth(token) : db) as PgDatabase<PgQueryResultHKT, TFullSchema, TSchema>
 }
