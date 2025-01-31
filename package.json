@@ -3,9 +3,17 @@
     "homepage": "https://github.com/daveyplate/neon-drizzle-tanstack",
     "version": "0.0.1",
     "description": "Neon Drizzle Tanstack Query Hooks",
-    "module": "dist/index",
-    "types": "dist/index",
-    "exports": "./dist/index.js",
+    "type": "module",
+    "exports": {
+        ".": {
+            "default": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./server": {
+            "default": "./dist/server.js",
+            "types": "./dist/server.d.ts"
+        }
+    },
     "files": [
         "src",
         "dist"
@@ -41,6 +49,7 @@
         "@neondatabase/serverless": "file:../new-tech/node_modules/@neondatabase/serverless",
         "@stylistic/eslint-plugin": "^3.0.0",
         "@tanstack/react-query": "file:../new-tech/node_modules/@tanstack/react-query",
+        "@tanstack/query-core": "file:../new-tech/node_modules/@tanstack/query-core",
         "@types/node": "^22.10.2",
         "@types/react": "^19.0.2",
         "@types/react-dom": "^19",
@@ -62,7 +71,8 @@
         "@tanstack/react-query": ">=5.65.0",
         "drizzle-orm": ">=0.36.0",
         "react": ">=18.0.0",
-        "react-dom": ">=18.0.0"
+        "react-dom": ">=18.0.0",
+        "@tanstack/query-core": ">=5.65.0"
     },
     "packageManager": "npm@10.9.0"
 }

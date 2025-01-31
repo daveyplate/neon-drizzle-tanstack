@@ -1,9 +1,4 @@
-import {
-    DBQueryConfig,
-    SQL,
-    TableRelationalConfig,
-    TablesRelationalConfig
-} from "drizzle-orm"
+import { DBQueryConfig, SQL, TableRelationalConfig, TablesRelationalConfig } from "drizzle-orm"
 import { CasingCache } from "drizzle-orm/casing"
 
 export function serializeConfig<

@@ -13,9 +13,7 @@ import {
     PgTable,
     PgUpdateSetSource
 } from "drizzle-orm/pg-core"
-import {
-    RelationalQueryBuilder
-} from "drizzle-orm/pg-core/query-builders/query"
+import { RelationalQueryBuilder } from "drizzle-orm/pg-core/query-builders/query"
 
 export async function findMany<
     TQueryResult extends PgQueryResultHKT,

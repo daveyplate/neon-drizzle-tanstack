@@ -12,11 +12,15 @@ export type NeonQueryContextType = {
     mutateInvalidate?: boolean,
     optimisticMutate?: boolean,
     cachePropagation?: boolean,
-    onMutate?: (table: string, operation: "delete" | "update" | "insert", records: RecordType[]) => void,
+    onMutate?: (
+        table: string,
+        operation: "delete" | "update" | "insert",
+        records: RecordType[]
+    ) => void,
     queryOptions?: Omit<AnyUseQueryOptions, "queryFn" | "queryKey">
 }
 
-export const NeonQueryContext = createContext<NeonQueryContextType>({} as NeonQueryContextType)
+export const NeonQueryContext = createContext<NeonQueryContextType>({})
 
 export const NeonQueryProvider = ({
     children, fetchEndpoint, optimisticMutate = true, cachePropagation = true, ...props
@@ -30,7 +34,9 @@ export const NeonQueryProvider = ({
     }, [fetchEndpoint])
 
     return (
-        <NeonQueryContext.Provider value={{ ...props, fetchEndpoint, optimisticMutate, cachePropagation }}>
+        <NeonQueryContext.Provider
+            value={{ ...props, fetchEndpoint, optimisticMutate, cachePropagation }}
+        >
             {children}
         </NeonQueryContext.Provider>
     )

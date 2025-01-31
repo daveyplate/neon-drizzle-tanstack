@@ -1,1 +1,1 @@
-# my-tsx-package
+# @daveyplate/neon-drizzle-tanstack

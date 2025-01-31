@@ -1,18 +1,10 @@
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
-import {
-    BuildQueryResult,
-    DBQueryConfig,
-    TablesRelationalConfig
-} from "drizzle-orm"
+import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
 import { useContext } from "react"
 
 import { insertQuery } from "../lib/db-queries"
-import {
-    NeonQueryContext,
-    NeonQueryContextType,
-    RecordType
-} from "../lib/neon-query-provider"
+import { NeonQueryContext, NeonQueryContextType, RecordType } from "../lib/neon-query-provider"
 import { serializeConfig } from "../lib/utils"
 
 import { useAuthDb } from "./use-auth-db"

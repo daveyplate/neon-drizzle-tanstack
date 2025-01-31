@@ -58,7 +58,7 @@ const eslintConfig = [
                 warnOnUnassignedImports: true
             }],
             "import/newline-after-import": "warn",
-            "import-newlines/enforce": ["warn", { "max-len": 80 }]
+            "import-newlines/enforce": ["warn", { "max-len": 100 }]
         }
     }
 ]
