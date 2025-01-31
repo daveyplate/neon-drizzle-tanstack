@@ -1,3 +1,4 @@
+import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
@@ -29,6 +30,8 @@ export function useUpdate<
     const authDb = useAuthDb(db)
 
     const {
+        appendTableEndpoint,
+        fetchEndpoint,
         mutateInvalidate,
         optimisticMutate,
         cachePropagation,
@@ -42,7 +45,13 @@ export function useUpdate<
             id?: IDType | null,
             values?: Partial<TableType>,
             where?: SQL
-        }) => updateQuery(authDb, pgTable, id, { ...values }, where),
+        }) => {
+            if (fetchEndpoint && appendTableEndpoint) {
+                neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}/update` : "/update")
+            }
+
+            return updateQuery(authDb, pgTable, id, { ...values }, where)
+        },
         onMutate: async ({ values, id }) => {
             if (!optimisticMutate || !id) return
 

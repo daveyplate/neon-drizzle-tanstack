@@ -1,3 +1,4 @@
+import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
@@ -25,14 +26,26 @@ export function useInsert<
     const pgTable = db._.fullSchema[table as string] as PgTable
     const queryClient = useQueryClient()
     const queryContext = useContext(NeonQueryContext)
-    const { mutateInvalidate, optimisticMutate, onMutate } = { ...queryContext, ...context }
+    const {
+        appendTableEndpoint,
+        fetchEndpoint,
+        mutateInvalidate,
+        optimisticMutate,
+        onMutate
+    } = { ...queryContext, ...context }
 
     const authDb = useAuthDb(db)
 
     const queryKey = table ? [table, "list", ...(config ? [serializeConfig(config)] : [])] : []
 
     const mutation = useMutation({
-        mutationFn: (values: Partial<TableType>) => insertQuery(authDb, pgTable, values),
+        mutationFn: (values: Partial<TableType>) => {
+            if (fetchEndpoint && appendTableEndpoint) {
+                neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}/insert`
+            }
+
+            return insertQuery(authDb, pgTable, values)
+        },
         onMutate: async (values) => {
             if (!optimisticMutate) return
 

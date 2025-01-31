@@ -1,3 +1,4 @@
+import { neonConfig } from "@neondatabase/serverless"
 import { Query, useMutation, useQueryClient } from "@tanstack/react-query"
 import { BuildQueryResult, DBQueryConfig, SQL, TablesRelationalConfig } from "drizzle-orm"
 import { PgDatabase, PgQueryResultHKT, PgTable } from "drizzle-orm/pg-core"
@@ -29,6 +30,8 @@ export function useDelete<
     const authDb = useAuthDb(db)
 
     const {
+        appendTableEndpoint,
+        fetchEndpoint,
         mutateInvalidate,
         optimisticMutate,
         cachePropagation,
@@ -41,7 +44,13 @@ export function useDelete<
         mutationFn: ({ id, where }: {
             id?: IDType,
             where?: SQL
-        }) => deleteQuery(authDb, pgTable, id, where),
+        }) => {
+            if (fetchEndpoint && appendTableEndpoint) {
+                neonConfig.fetchEndpoint = fetchEndpoint + `/${table as string}` + (id ? `/${id}/delete` : "/delete")
+            }
+
+            return deleteQuery(authDb, pgTable, id, where)
+        },
         onMutate: async ({ id }) => {
             if (!optimisticMutate || !id) return
 
